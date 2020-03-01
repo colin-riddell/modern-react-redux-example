@@ -1,9 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 export const slice = createSlice({
-  name: 'counter',
+  name: 'pirateSlice',
   initialState: {
     value: 0,
+    loading: 'idle',
+    pirate: {}
   },
   reducers: {
     increment: state => {
@@ -19,10 +21,61 @@ export const slice = createSlice({
     incrementByAmount: (state, action) => {
       state.value += action.payload.amount;
     },
+    timesAThousand: state =>{
+      state.value = state.value * 1000;
+    },
+    divAThousand: state => {
+      state.value = state.value / 1000;
+    },
+
+    recievePirate: (state, data) => {
+      console.log("in pirate slice reducer");
+      console.log(data.payload.pirate);
+      state.value = data.payload.pirate;
+    },
+    pirateLoading(state, action) {
+      if(state.loading === 'idle') {
+          state.loading = 'pending'
+      }
+    },
+    pirateRecieved(state, action) {
+      if(state.loading === 'pending') {
+          state.loading = 'idle'
+          state.pirate = action.payload
+          console.log(action.payload);
+      }
+    }
+
+
   },
 });
 
+
+
+const getPirate = async () => {
+  let response = await fetch(`http://localhost:8080/pirates/1`);
+  let data = await response.json()
+  return data;
+}
+
+export const fetchPirate = () => async dispatch => {
+    dispatch(pirateLoading());
+    const response = await getPirate()
+    dispatch(pirateRecieved(response));
+
+}
+
 export const selectCount = state => state.counter.value;
-export const { increment, decrement, incrementByAmount } = slice.actions;
+export const selectPirate = state => state.counter.pirate;
+
+export const {
+  increment,
+  decrement,
+  incrementByAmount,
+  timesAThousand,
+  divAThousand,
+  pirateLoading,
+  pirateRecieved
+ } = slice.actions;
 
 export default slice.reducer;
